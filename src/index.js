@@ -1,77 +1,77 @@
 module.exports = function solveSudoku(matrix) {
-  const size = 9;
-  const boxSize= 3;
+	const SIZE = matrix.length;
+	const BOX_SIZE = Math.sqrt(SIZE);
 
-  const findEmpty = (board) => {
-      for (let r = 0; r < size; r++) {
-          for (let c = 0; c< size; c++) {
-              if (board[r][c] === 0) {
-                  return [r, c];
-              }
-          }
-      }
+	function findEmpty(matrix) {
+		for (let r = 0; r < SIZE; r++) {
+			for (let c = 0; c < SIZE; c++) {
+				if (matrix[r][c] === 0) {
+					return [r, c];
+				}
+			}
+		}
+		
+		return null;
+	}
 
-      return null;
-  };
+	function validate(num, pos, matrix) {
+		const [r, c] = pos;
 
-  const validate = (num, pos, board) => {
-      const [r, c] = pos;
+		// Check column
+		for (let i = 0; i < SIZE; i++) {
+			if (matrix[i][c] === num && i !== r) {
+				return false;
+			}
+		}
 
-      //check rows
-      for (let i = 0; i < size; i++) {
-          if (board[i][c] === num && i !== r) {
-              return false;
-          }
-      }
+		// Check row
+		for (let i = 0; i < SIZE; i++) {
+			if (matrix[r][i] === num && i !== c) {
+				return false;
+			}
+		}
 
-      //check columns
-      for (let i = 0; i < size; i++) {
-          if (board[r][i] === num && i !== c) {
-              return false;
-          }
-      }
+		// Check box
+		const boxRowPos = Math.floor(r / BOX_SIZE) * BOX_SIZE;
+		const boxColPos = Math.floor(c / BOX_SIZE) * BOX_SIZE;
 
-      //check box
-      const boxRow = Math.floor(r / boxSize) * boxSize;
-      const boxCol = Math.floor(c / boxSize) * boxSize;
+		for (let i = boxRowPos; i < boxRowPos + BOX_SIZE; i++) {
+			for (let j = boxColPos; j < boxColPos + BOX_SIZE; j++) {
+				if (matrix[i][j] === num && i !== r && j !== c) {
+					return false;
+				}
+			}
+		}
 
-      for (let i = boxRow; i < boxRow + boxSize; i++) {
-          for (let j = boxCol; j < boxCol + boxSize; j++) {
-              if (board[i][j] === num && i !== r && j !== c) {
-                  return false;
-              }
-          }
-      }
+		return true;
+	};
 
-      return true;
-  };
+	function solve() {
+		const currentPosition = findEmpty(matrix);
 
-  const solve = () => {
-      const currentPosition = findEmpty(matrix);
+		if (currentPosition === null) {
+			return true;
+		}
 
-      if (currentPosition === null) {
-          return true;
-      }
+		for (let i = 1; i < SIZE + 1; i++) {
+			let currentNumber = i;
+			let isValid = validate(currentNumber, currentPosition, matrix);
 
-      for (let i = 1; i < size + 1; i++) {
-          const currentNumber = i;
-          const isValid = validate(currentNumber, currentPosition, matrix);
+			if (isValid) {
+				const [x, y] = currentPosition;
+				matrix[x][y] = currentNumber;
 
-          if (isValid) {
-              const [x, y] = currentPosition;
-              matrix[x][y] = currentNumber;
+				if (solve()) {
+					return true;
+				}
 
-              if(solve()) {
-                  return true;
-              }
+				matrix[x][y] = 0;
+			}
+		}
 
-              matrix[x][y] = 0;
-          }
-      }
+		return false;
+	}
 
-      return false;
-  };
-
-  solve();
-  return matrix;
+	solve();
+	return matrix;
 };
